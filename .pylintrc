@@ -1,0 +1,6 @@
+[FORMAT]
+max-line-length=500
+[MESSAGES CONTROL]
+disable=W0702,R0912,R0913,R0914,R0915
+[pylint]
+indent-string='\t'

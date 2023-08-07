@@ -11,19 +11,22 @@ Support folder structure 2 (each folder -> one experiment entry):
 		...
 """
 import os
+import shlex
 import glob
 import datetime
 from labii_sdk.sdk import LabiiObject
 
-def collect_labii_settings():
+def collect_labii_settings(skip=[]):
 	""" return labii related settings """
 	settings = {}
 	settings["labii_base_url"] = input("What is the base url [https://www.labii.dev]? ")
 	if settings["labii_base_url"] == "":
 		settings["labii_base_url"] = "https://www.labii.dev"
 	settings["labii_organization_sid"] = input("What is your Labii organizaiton sid (Settings -> Organization -> SID)? ")
-	settings["labii_project_sid"] = input("What is your Labii project sid? ")
-	settings["labii_table_entry_sid"] = input("What is your Labii entry table sid (Settings -> Tables -> Entry -> SID)? ")
+	if not "labii_project_sid" in skip:
+		settings["labii_project_sid"] = input("What is your Labii project sid? ")
+	if not "labii_table_entry_sid" in skip:
+		settings["labii_table_entry_sid"] = input("What is your Labii entry table sid (Settings -> Tables -> Entry -> SID)? ")
 	settings["labii_table_file_sid"] = input("What is your Labii file table sid (Settings -> Tables -> Entry -> SID)? ")
 	return settings
 
@@ -50,10 +53,10 @@ def upload_file_as_labii_entry(labii, current_file, settings, timestamp=""):
 	last_modified_time = datetime.datetime.fromtimestamp(timestamp)
 	formatted_time = last_modified_time.strftime("%A, %Y-%m-%d")
 	# create a entry
-	entry_name = file_name.split(".")[0]
+	entry_name = os.path.splitext(file_name)[0]
 	data = f"""<div class="labii-day"><span class="labii-day-label">{formatted_time}</span></div>"""
 	for file_record in file_records:
-		data = f"""{data}<section class="labii-file" sid="{file_record['sid']}" name="{file_record['name']}" version="{file_record['version']['sid']}" should_hide_preview="false"></section>"""
+		data = f"""{data}<section class="labii-file" sid="{file_record['sid']}" name="{file_record['uid']}: {file_record['name']}" version="{file_record['version']['sid']}" should_hide_preview="false"></section>"""
 	data = f"{data}<p>&nbsp;</p>"
 	response = labii.Record.create(
 		{
@@ -63,6 +66,10 @@ def upload_file_as_labii_entry(labii, current_file, settings, timestamp=""):
 		},
 		query=f"table__sid={settings['labii_table_entry_sid']}"
 	)
+	if "uid" in response:
+		print(f"{response['uid']}: {response['name']}")
+	else:
+		print(response)
 
 def main():
 	""" import file or folder to labii entry """
@@ -78,7 +85,7 @@ def main():
 		settings["labii_table_file_sid"] = "58ad0a40xfff57bglqvAF"
 		settings["folder_path"] = "xxx/"
 	settings["folder_path"] = settings["folder_path"].rstrip("/")
-	settings["folder_path_escape"] = settings["folder_path"].replace(' ', '\ ')
+	settings["folder_path_escape"] = shlex.quote(settings["folder_path"])
 	print(settings)
 	settings["confirm"] = input("Enter to confirm the provide settings is correct. ")
 	# collect the files
@@ -99,7 +106,7 @@ def main():
 		index += 1
 		if not "/migrated" in current_file:
 			upload_file_as_labii_entry(labii, current_file, settings, timestamp="")
-			current_file_escape = current_file.replace(' ', '\ ')
+			current_file_escape = shlex.quote(current_file)
 			os.system(f"mv {current_file_escape} {settings['folder_path_escape']}/migrated/")
 
 if __name__ == "__main__":

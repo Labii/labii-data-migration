@@ -15,19 +15,20 @@ import shlex
 import glob
 import datetime
 from labii_sdk.sdk import LabiiObject
+from labii_sdk_core.sdk import print_yellow, print_blue, print_green, print_red, input_yellow
 
 def collect_labii_settings(skip=[]):
 	""" return labii related settings """
 	settings = {}
-	settings["labii_base_url"] = input("What is the base url [https://www.labii.dev]? ")
+	settings["labii_base_url"] = input_yellow("What is the base url [https://www.labii.dev]? ")
 	if settings["labii_base_url"] == "":
 		settings["labii_base_url"] = "https://www.labii.dev"
-	settings["labii_organization_sid"] = input("What is your Labii organizaiton sid (Settings -> Organization -> SID)? ")
+	settings["labii_organization_sid"] = input_yellow("What is your Labii organizaiton sid (Settings -> Organization -> SID)? ")
 	if not "labii_project_sid" in skip:
-		settings["labii_project_sid"] = input("What is your Labii project sid? ")
+		settings["labii_project_sid"] = input_yellow("What is your Labii project sid? ")
 	if not "labii_table_entry_sid" in skip:
-		settings["labii_table_entry_sid"] = input("What is your Labii entry table sid (Settings -> Tables -> Entry -> SID)? ")
-	settings["labii_table_file_sid"] = input("What is your Labii file table sid (Settings -> Tables -> Entry -> SID)? ")
+		settings["labii_table_entry_sid"] = input_yellow("What is your Labii entry table sid (Settings -> Tables -> Entry -> SID)? ")
+	settings["labii_table_file_sid"] = input_yellow("What is your Labii file table sid (Settings -> Tables -> Entry -> SID)? ")
 	return settings
 
 def upload_file_as_labii_entry(labii, current_file, settings, timestamp=""):

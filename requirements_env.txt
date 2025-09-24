@@ -2,3 +2,5 @@ labii-sdk
 pandas>=2.0.3
 openpyxl
 beautifulsoup4
+msal
+tenacity
